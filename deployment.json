@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "start": "npm run dev",
+    "serve": "npm run preview"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
