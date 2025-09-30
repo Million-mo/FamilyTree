@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, message, Divider } from 'antd';
+import { Form, Input, Button, Card, Typography, message, Divider, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useUserStore, useUIStore } from '@/store';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
@@ -134,6 +134,16 @@ export const LoginPage: React.FC = () => {
           >
             使用演示账号登录
           </Button>
+
+          {/* 注册链接 */}
+          <div className="text-center mt-4">
+            <Space>
+              <span className="text-gray-600">没有账户？</span>
+              <Link to="/register" className="text-chinese-red hover:text-red-700">
+                立即注册
+              </Link>
+            </Space>
+          </div>
 
           {/* 演示说明 */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">

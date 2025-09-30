@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Upload, Button, message } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, Upload, Button, message, Divider } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useFamilyTreeStore } from '@/store';
 import type { Member } from '@/types';
@@ -22,7 +22,10 @@ export const MemberForm: React.FC<MemberFormProps> = ({
   onSuccess
 }) => {
   const [form] = Form.useForm();
-  const { addMember, updateMember } = useFamilyTreeStore();
+  const { addMember, updateMember, members, addRelationship } = useFamilyTreeStore();
+
+  // 获取可选择的成员列表（排除当前编辑的成员）
+  const availableMembers = members.filter(m => m.id !== member?.id);
 
   useEffect(() => {
     if (visible && member) {
@@ -44,10 +47,43 @@ export const MemberForm: React.FC<MemberFormProps> = ({
         deathDate: values.deathDate ? values.deathDate.toDate() : undefined,
       };
 
+      let memberId: string;
       if (member) {
         await updateMember(member.id, memberData);
+        memberId = member.id;
       } else {
-        await addMember(memberData);
+        memberId = await addMember(memberData);
+      }
+
+      // 创建关系
+      if (values.parents && values.parents.length > 0) {
+        for (const parentId of values.parents) {
+          await addRelationship({
+            type: 'parent',
+            fromMember: parentId,
+            toMember: memberId
+          });
+        }
+      }
+
+      if (values.spouse && values.spouse.length > 0) {
+        for (const spouseId of values.spouse) {
+          await addRelationship({
+            type: 'spouse',
+            fromMember: memberId,
+            toMember: spouseId
+          });
+        }
+      }
+
+      if (values.children && values.children.length > 0) {
+        for (const childId of values.children) {
+          await addRelationship({
+            type: 'parent',
+            fromMember: memberId,
+            toMember: childId
+          });
+        }
       }
 
       message.success(`成员${member ? '更新' : '添加'}成功`);
@@ -66,13 +102,24 @@ export const MemberForm: React.FC<MemberFormProps> = ({
     }
   };
 
+  // 根据选择的父母自动计算辈分
+  const handleParentsChange = (parentIds: string[]) => {
+    if (parentIds && parentIds.length > 0) {
+      const parents = parentIds.map(id => members.find(m => m.id === id)).filter(Boolean);
+      if (parents.length > 0) {
+        const maxGeneration = Math.max(...parents.map(p => p!.generation));
+        form.setFieldsValue({ generation: maxGeneration + 1 });
+      }
+    }
+  };
+
   return (
     <Modal
       title={member ? '编辑成员信息' : '添加新成员'}
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={600}
+      width={800}
       destroyOnClose
     >
       <Form
@@ -84,6 +131,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           generation: 1,
         }}
       >
+        {/* 基本信息 */}
         <Form.Item
           label="姓名"
           name="name"
@@ -125,6 +173,80 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           <Input placeholder="请输入字辈（如：德、志、明等）" />
         </Form.Item>
 
+        <Divider>家庭关系</Divider>
+
+        {/* 家庭关系 */}
+        <Form.Item
+          label="父母"
+          name="parents"
+          tooltip="选择该成员的父母，系统会自动计算辈分"
+        >
+          <Select 
+            mode="multiple" 
+            placeholder="请选择父母"
+            onChange={handleParentsChange}
+            showSearch
+            filterOption={(input, option) =>
+              (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+            }
+          >
+            {availableMembers
+              .filter(m => !form.getFieldValue('generation') || m.generation < form.getFieldValue('generation'))
+              .map(m => (
+                <Option key={m.id} value={m.id}>
+                  {m.name} ({m.gender === 'male' ? '男' : '女'}, 第{m.generation}代)
+                </Option>
+              ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          label="配偶"
+          name="spouse"
+        >
+          <Select 
+            mode="multiple" 
+            placeholder="请选择配偶"
+            showSearch
+            filterOption={(input, option) =>
+              (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+            }
+          >
+            {availableMembers
+              .filter(m => !form.getFieldValue('generation') || m.generation === form.getFieldValue('generation'))
+              .map(m => (
+                <Option key={m.id} value={m.id}>
+                  {m.name} ({m.gender === 'male' ? '男' : '女'}, 第{m.generation}代)
+                </Option>
+              ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          label="子女"
+          name="children"
+        >
+          <Select 
+            mode="multiple" 
+            placeholder="请选择子女"
+            showSearch
+            filterOption={(input, option) =>
+              (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+            }
+          >
+            {availableMembers
+              .filter(m => !form.getFieldValue('generation') || m.generation > form.getFieldValue('generation'))
+              .map(m => (
+                <Option key={m.id} value={m.id}>
+                  {m.name} ({m.gender === 'male' ? '男' : '女'}, 第{m.generation}代)
+                </Option>
+              ))}
+          </Select>
+        </Form.Item>
+
+        <Divider>详细信息</Divider>
+
+        {/* 详细信息 */}
         <Form.Item
           label="出生日期"
           name="birthDate"

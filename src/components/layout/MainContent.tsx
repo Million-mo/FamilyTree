@@ -10,6 +10,7 @@ import { MembersPage } from '@/pages/MembersPage';
 import { EditorPage } from '@/pages/EditorPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { RegisterPage } from '@/pages/RegisterPage';
 
 // 受保护的路由组件
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -42,6 +43,13 @@ export const MainContent: React.FC = () => {
           path="/login" 
           element={
             isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
+          } 
+        />
+        
+        <Route 
+          path="/register" 
+          element={
+            isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />
           } 
         />
         

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, LoginData, UserProfile } from '@/types';
+import type { User, LoginData, RegisterData, UserProfile } from '@/types';
 
 interface UserState {
   user: User | null;
@@ -10,6 +10,7 @@ interface UserState {
   
   // Actions
   login: (credentials: LoginData) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   updateProfile: (data: UserProfile) => Promise<void>;
   setUser: (user: User) => void;
@@ -43,6 +44,33 @@ export const useUserStore = create<UserState>()(
             user: mockUser,
             isAuthenticated: true,
             permissions: ['read', 'write', 'admin'],
+            loading: false,
+          });
+        } catch (error) {
+          set({ loading: false });
+          throw error;
+        }
+      },
+
+      register: async (data: RegisterData) => {
+        set({ loading: true });
+        try {
+          // TODO: 实际的API调用
+          // const response = await api.register(data);
+          
+          // 模拟注册
+          const newUser: User = {
+            id: Date.now().toString(),
+            username: data.username,
+            email: data.email,
+            familyTrees: [],
+            role: 'editor',
+          };
+          
+          set({
+            user: newUser,
+            isAuthenticated: true,
+            permissions: ['read', 'write'],
             loading: false,
           });
         } catch (error) {

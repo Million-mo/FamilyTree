@@ -1,18 +1,20 @@
 import React from 'react';
-import { List, Card, Avatar, Tag, Button, Space, Empty } from 'antd';
-import { EditOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
+import { List, Card, Avatar, Tag, Button, Space, Empty, Popconfirm } from 'antd';
+import { EditOutlined, DeleteOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
 import type { Member } from '@/types';
 
 interface MemberListProps {
   members: Member[];
   onEdit: (member: Member) => void;
   onSelect: (member: Member) => void;
+  onDelete?: (member: Member) => void;
 }
 
 export const MemberList: React.FC<MemberListProps> = ({
   members,
   onEdit,
-  onSelect
+  onSelect,
+  onDelete
 }) => {
   if (members.length === 0) {
     return (
@@ -47,8 +49,27 @@ export const MemberList: React.FC<MemberListProps> = ({
                 onClick={() => onEdit(member)}
               >
                 编辑
-              </Button>
-            ]}
+              </Button>,
+              onDelete && (
+                <Popconfirm
+                  key="delete"
+                  title="确认删除"
+                  description={`确定要删除成员"${member.name}"吗？此操作不可恢复。`}
+                  onConfirm={() => onDelete(member)}
+                  okText="确定"
+                  cancelText="取消"
+                  okType="danger"
+                >
+                  <Button
+                    type="link"
+                    danger
+                    icon={<DeleteOutlined />}
+                  >
+                    删除
+                  </Button>
+                </Popconfirm>
+              )
+            ].filter(Boolean)}
             onClick={() => onSelect(member)}
             className="cursor-pointer hover:bg-gray-50 transition-colors"
           >

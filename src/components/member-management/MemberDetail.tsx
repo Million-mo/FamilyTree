@@ -1,16 +1,18 @@
 import React from 'react';
-import { Card, Descriptions, Avatar, Tag, Button, Space, Divider } from 'antd';
-import { EditOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
+import { Card, Descriptions, Avatar, Tag, Button, Space, Divider, Popconfirm } from 'antd';
+import { EditOutlined, DeleteOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
 import type { Member } from '@/types';
 
 interface MemberDetailProps {
   member: Member;
   onEdit: (member: Member) => void;
+  onDelete?: (member: Member) => void;
 }
 
 export const MemberDetail: React.FC<MemberDetailProps> = ({
   member,
-  onEdit
+  onEdit,
+  onDelete
 }) => {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('zh-CN', {
@@ -30,13 +32,32 @@ export const MemberDetail: React.FC<MemberDetailProps> = ({
     <Card
       title="成员详情"
       extra={
-        <Button
-          type="primary"
-          icon={<EditOutlined />}
-          onClick={() => onEdit(member)}
-        >
-          编辑
-        </Button>
+        <Space>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(member)}
+          >
+            编辑
+          </Button>
+          {onDelete && (
+            <Popconfirm
+              title="确认删除"
+              description={`确定要删除成员"${member.name}"吗？此操作不可恢复。`}
+              onConfirm={() => onDelete(member)}
+              okText="确定"
+              cancelText="取消"
+              okType="danger"
+            >
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+              >
+                删除
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
       }
     >
       <div className="text-center mb-4">

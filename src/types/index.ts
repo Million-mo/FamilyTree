@@ -111,6 +111,16 @@ export interface LoginData {
   password: string;
 }
 
+// 注册数据接口
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  realName?: string;
+  phone?: string;
+}
+
 // 用户资料接口
 export interface UserProfile {
   username?: string;
